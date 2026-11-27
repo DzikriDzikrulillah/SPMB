@@ -268,6 +268,3 @@ Framework dan pustaka pihak ketiga yang digunakan dalam proyek ini tetap tunduk 
 
 ---
 
-\<p align="center">
-&#x20; \<strong>SPMB-APP — Sistem Pendukung Keputusan Seleksi SPMB dengan Metode WASPAS\</strong>
-\</p>
