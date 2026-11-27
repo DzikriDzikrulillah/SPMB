@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports;
 
 use App\Models\Pendaftar;
@@ -11,31 +12,25 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class PendaftarSheet implements FromCollection, WithTitle, WithHeadings, ShouldAutoSize, WithStyles
 {
-    protected $criteria;
+    protected string $criteria;
 
-    public function __construct($criteria)
+    public function __construct(string $criteria)
     {
         $this->criteria = $criteria;
     }
 
-    /**
-     * Mengambil data berdasarkan kondisi dengan format yang sesuai
-     *
-     * @return Collection
-     */
     public function collection()
     {
-        $query = Pendaftar::query();
+        $query = Pendaftar::query()->with('hasilWaspas');
 
-        // Filter berdasarkan kriteria yang dipilih
-        if ($this->criteria == 0) {
-            $query->where('acc', 0);
-        } elseif ($this->criteria == 1) {
+        if ($this->criteria === 'acc') {
             $query->where('acc', 1);
-        } elseif ($this->criteria == 'daful_0') {
-            $query->where('daful', 0);
-        } elseif ($this->criteria == 'daful_1') {
-            $query->where('daful', 1);
+        } elseif ($this->criteria === 'tidak_acc') {
+            $query->where('acc', 0);
+        } elseif ($this->criteria === 'diterima') {
+            $query->where('status_seleksi', 'diterima');
+        } elseif ($this->criteria === 'ditolak') {
+            $query->where('status_seleksi', 'ditolak');
         }
 
         $data = $query->get()->map(function ($item, $index) {
@@ -76,10 +71,11 @@ class PendaftarSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
                 'HP Siswa'          => $item->hp_siswa,
                 'Email'             => $item->email,
                 'Rekomendasi'       => $item->rekomendasi,
-                'Jarak'             => $item->jarak . ' KM',
+                'Jarak (km)'        => $item->jarak_km,
                 'Alamat'            => $item->alamat,
-                'Daful'             => $item->daful == 1 ? 'Diterima' : 'Belum Diterima',
-                'ACC'               => $item->acc == 1 ? 'Di ACC' : 'Belum ACC',
+                'SKTM'              => $item->sktm,
+                'ACC'               => $item->acc == 1 ? 'ACC' : 'Belum ACC',
+                'Status Seleksi'    => ucfirst($item->status_seleksi ?? 'pending'),
                 'Created At'        => $item->created_at,
                 'Updated At'        => $item->updated_at,
             ];
@@ -88,31 +84,17 @@ class PendaftarSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
         return collect($data);
     }
 
-    /**
-     * Judul sheet
-     *
-     * @return string
-     */
     public function title(): string
     {
-        if ($this->criteria == 0) {
-            return 'Belum Di ACC';
-        } elseif ($this->criteria == 1) {
-            return 'Sudah Di ACC';
-        } elseif ($this->criteria == 'daful_0') {
-            return 'Belum Diterima';
-        } elseif ($this->criteria == 'daful_1') {
-            return 'Diterima';
-        }
-
-        return 'Sheet';
+        return match ($this->criteria) {
+            'acc' => 'ACC',
+            'tidak_acc' => 'Tidak ACC',
+            'diterima' => 'Diterima',
+            'ditolak' => 'Ditolak',
+            default => 'Data',
+        };
     }
 
-    /**
-     * Headings untuk tabel Excel
-     *
-     * @return array
-     */
     public function headings(): array
     {
         return [
@@ -152,23 +134,21 @@ class PendaftarSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
             'HP Siswa',
             'Email',
             'Rekomendasi',
-            'Jarak',
+            'Jarak (km)',
             'Alamat',
-            'Daful',
-            'Nilai ACC',
+            'SKTM',
+            'ACC',
+            'Status Seleksi',
             'Created At',
             'Updated At',
         ];
     }
-    /**
-     * Mengatur style Excel
-     *
-     * @param Worksheet $sheet
-     */
+
     public function styles(Worksheet $sheet)
     {
-        // Menengahkan judul kolom (headings)
-        $sheet->getStyle('A1:AJ1')->applyFromArray([
+        $highestColumn = $sheet->getHighestColumn();
+
+        $sheet->getStyle("A1:{$highestColumn}1")->applyFromArray([
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
             ],
@@ -177,12 +157,10 @@ class PendaftarSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
             ],
         ]);
 
-        // Membuat data rata kiri
-        $sheet->getStyle('A2:AJ' . $sheet->getHighestRow())->applyFromArray([
+        $sheet->getStyle("A2:{$highestColumn}" . $sheet->getHighestRow())->applyFromArray([
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
             ],
         ]);
     }
 }
-

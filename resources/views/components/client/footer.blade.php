@@ -4,7 +4,7 @@
             <div class="col-lg-3 col-md-6">
                 <p>
                 Mari bergabung bersama kami
-                lewat PPDB Tahun Ajaran 2025/2026
+                lewat SPMB Tahun Ajaran 2026/2027
                 di SMAN 1 Sindangkasih  dan mulai petualangan pendidikan yang penuh inspirasi!
                 </p>
                 <div class="d-flex pt-2">

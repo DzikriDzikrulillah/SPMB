@@ -39,9 +39,9 @@
                             <div class="col-12 col-lg-6">
                                 <h5 class=" text-uppercase mb-3 animated slideInDown" style="color: #000000">
                                     MULAI DARI HARI INI!</h5>
-                                <h1 class="display-3 animated slideInDown" style="color: #000000">SMAN 1 SINDANGKASIH</h1>
+                                <h1 class="display-3 animated slideInDown" style="color: #ffffff">SMAN 1 SINDANGKASIH</h1>
                                 <p class="fs-5 text-light mb-5">
-                                    {{"Kini Menerima Peserta Didik Baru Untuk Tahun Ajaran 2024/2025.! Ayoo Segera Daftarkan Diri Anda"}}
+                                    {{"Kini Menerima murid Baru Untuk Tahun Ajaran 2026/2027.! Ayoo Segera Daftarkan Diri Anda"}}
                                 </p>
                                 <a href="{{route('daftar')}}" target="_blank"
                                     class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Daftar

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('gelombang')->nullable();
             $table->string('jurusan')->nullable();
             $table->string('jalur')->nullable();
-            
+
             // Data siswa
             $table->string('nama_siswa');
             $table->string('asal_sekolah');
@@ -45,12 +45,11 @@ return new class extends Migration
             $table->string('nama_ayah');
             $table->string('pekerjaan_ayah');
             $table->string('status_ayah');
-            $table->string('penghasilan_ayah');
+            $table->decimal('penghasilan_ayah', 15, 2);
             $table->string('nama_ibu');
             $table->string('pekerjaan_ibu');
             $table->string('status_ibu');
-            $table->string('penghasilan_ibu');
-
+            $table->decimal('penghasilan_ibu', 15, 2);
             // Data Kontak
             $table->string('hp_ayah')->nullable();
             $table->string('hp_ibu')->nullable();
@@ -61,14 +60,18 @@ return new class extends Migration
             $table->longText('alamat');
 
             //Upload
-            $table->string('foto_profil'); 
-            $table->string('transkrip_nilai'); 
+            $table->string('foto_profil');
+            $table->string('transkrip_nilai');
             $table->string('skhun');
-            $table->string('kartu_keluarga'); 
+            $table->string('kartu_keluarga');
 
             // ACC 
             $table->string('acc')->default(0)->nullable();
             $table->string('daful')->default(0)->nullable();
+
+            $table->decimal('penghasilan_orangtua', 15, 2)->nullable();
+            $table->integer('ranking')->nullable();
+            $table->enum('status_akhir', ['DITERIMA', 'CADANGAN', 'TIDAK'])->nullable();
 
             $table->timestamps();
         });

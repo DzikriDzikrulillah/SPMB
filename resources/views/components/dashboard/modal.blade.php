@@ -52,6 +52,13 @@
           <div class="invalid-feedback">{{$message}}</div>
           @enderror
         </div>
+        <div class="form-group mt-2">
+          <label>Kuota Jalur</label>
+          <input type="number" name="kuota" min="0" value="{{ old('kuota', 0) }}" class="form-control @error('kuota') is-invalid @enderror">
+          @error('kuota')
+          <div class="invalid-feedback">{{$message}}</div>
+          @enderror
+        </div>
       </div>
       <div class="modal-footer">
         <a href="{{ route('jalur') }}" class="btn btn-secondary">Batal</a>

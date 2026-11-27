@@ -10,4 +10,13 @@ class Jalur extends Model
     use HasFactory;
     protected $table = 'jalur';
     protected $guarded = [];
+
+    protected $casts = [
+        'kuota' => 'integer',
+    ];
+
+    public function bobotKriteria()
+    {
+        return $this->hasOne(BobotKriteria::class);
+    }
 }

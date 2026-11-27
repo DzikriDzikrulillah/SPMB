@@ -13,6 +13,7 @@ use App\Models\Pendaftar;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 
 class ClientController extends Controller
@@ -23,10 +24,17 @@ class ClientController extends Controller
         $tentang = Tentang::first();
         $info = Informasi::orderBy('id', 'DESC')->limit(6)->get();
 
-        $jp = Pendaftar::where('acc', '0')->where('daful', '0')->count();
-        $jt = Pendaftar::where('acc', '1')->where('daful', '1')->count();
+        // Gabungkan beberapa hitungan Pendaftar ke dalam satu query agregat untuk mengurangi jumlah kueri
+        $hasStatusColumn = Pendaftar::hasSelectionStatusColumn();
+        if ($hasStatusColumn) {
+            $counts = Pendaftar::selectRaw("SUM(CASE WHEN acc = 0 THEN 1 ELSE 0 END) as jp, SUM(CASE WHEN status_seleksi = 'diterima' THEN 1 ELSE 0 END) as jt")->first();
+        } else {
+            $counts = Pendaftar::selectRaw("SUM(CASE WHEN acc = 0 THEN 1 ELSE 0 END) as jp, SUM(CASE WHEN acc = 1 THEN 1 ELSE 0 END) as jt")->first();
+        }
+
+        $jp = (int) ($counts->jp ?? 0);
+        $jt = (int) ($counts->jt ?? 0);
         $jj = Jurusan::count();
-        $jl = Jalur::count();
 
         return view('Client/index', compact(
             'slide',
@@ -34,8 +42,7 @@ class ClientController extends Controller
             'info',
             'jp',
             'jt',
-            'jj',
-            'jl',
+            'jj'
         ));
     }
 
@@ -94,24 +101,28 @@ class ClientController extends Controller
             'nama_ayah' => 'required',
             'status_ayah' => 'required',
             'pekerjaan_ayah' => 'required',
-            'penghasilan_ayah' => 'required',
+            'penghasilan_ayah' => 'required|numeric|min:0',
             'nama_ibu' => 'required',
             'status_ibu' => 'required',
             'pekerjaan_ibu' => 'required',
-            'penghasilan_ibu' => 'required',
+            'penghasilan_ibu' => 'required|numeric|min:0',
             'hp_ayah' => 'nullable|string|max:15',
             'hp_ibu'  => 'nullable|string|max:15',
             'rekomendasi' => 'nullable|string',
             'hp_siswa' => 'required',
             'email' => 'required',
-            'jarak' => 'required',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'jarak_km' => 'required|numeric|min:0',
             'alamat' => 'required',
             'foto_profil' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'transkrip_nilai' => 'required|mimes:pdf|max:5120',
             'skhun' => 'required|mimes:pdf|max:5120',
             'kartu_keluarga' => 'required|mimes:pdf|max:5120',
+            'sktm' => 'required|mimes:pdf,jpeg,png,jpg|max:5120',
+            'sptjm' => 'required|file|mimes:pdf|max:5120',
         ]);
-        $pendaftar = new Pendaftar($req->except(['foto_profil', 'transkrip_nilai', 'skhun', 'kartu_keluarga']));
+        $pendaftar = new Pendaftar($req->except(['foto_profil', 'transkrip_nilai', 'skhun', 'kartu_keluarga', 'sktm', 'sptjm']));
 
         // Upload Foto Profil
         if ($req->hasFile('foto_profil')) {
@@ -140,9 +151,38 @@ class ClientController extends Controller
             $path = $req->kartu_keluarga->storeAs('public/kartu_keluarga', $fileName);
             $pendaftar->kartu_keluarga = 'kartu_keluarga/' . $fileName;
         }
+
+        // Compute and store distance from provided coordinates to school
+        $schoolLat = -7.308688088643808;
+        $schoolLng = 108.24370675150715;
+
+        $pendaftar->latitude = $req->input('latitude');
+        $pendaftar->longitude = $req->input('longitude');
+        // server-side compute to ensure integrity
+        $computed = haversine_distance_km($pendaftar->latitude, $pendaftar->longitude, $schoolLat, $schoolLng);
+        $pendaftar->jarak_km = round((float) $computed, 2);
+
+        // Upload SKTM (sktm) - now required
+        if ($req->hasFile('sktm')) {
+            $fileName = time() . '_sktm.' . $req->sktm->getClientOriginalExtension();
+            $req->sktm->storeAs('public/sktm', $fileName);
+            $pendaftar->sktm = 'sktm/' . $fileName;
+        }
+
+        if ($req->hasFile('sptjm')) {
+            $fileName = time() . '_sptjm.pdf';
+            $req->sptjm->storeAs('public/sptjm', $fileName);
+            $pendaftar->sptjm = 'sptjm/' . $fileName;
+        }
+
         $pendaftar->save();
 
         return redirect()->back()->with('success', 'Sukses Melakukan Registrasi Online');
+    }
+
+    public function downloadSptjm()
+    {
+        return Pdf::loadView('Client.sptjm')->download('blanko-sptjm-spmb.pdf');
     }
 
     public function cek()
@@ -208,10 +248,35 @@ class ClientController extends Controller
     public function download(Request $request, $id)
     {
         $data = Pendaftar::findOrFail($id);
+
+        // Jika request digunakan untuk langsung melakukan streaming/download PDF
+        if ($request->has('download') && $request->download == '1') {
+            if (! $data->isDiterima()) {
+                return back()->with('error', 'Bukti penerimaan hanya tersedia untuk murid yang dinyatakan diterima.');
+            }
+
+            if ($request->nisn != $data->nisn) {
+                return back()->with('error', 'NISN yang dimasukkan salah.');
+            }
+
+            $pdf = Pdf::loadView('Client.pdf', compact('data'));
+
+            return $pdf->stream('bukti-diterima-' . $data->id . '.pdf');
+        }
+
+        // Alur verifikasi NISN: jika nisn benar, tampilkan halaman hasil seleksi
         if ($request->nisn != $data->nisn) {
             return back()->with('error', 'NISN yang dimasukkan salah.');
         }
-        $pdf = Pdf::loadView('Client.pdf', compact('data'));
-        return $pdf->stream("{$data->nama_siswa}.pdf");
+
+        if ($data->status_seleksi === 'diterima') {
+            return view('Client.hasil_diterima', ['data' => $data, 'nisn' => $request->nisn]);
+        }
+
+        if ($data->status_seleksi === 'ditolak') {
+            return view('Client.hasil_ditolak', ['data' => $data]);
+        }
+
+        return back()->with('error', 'Status seleksi murid belum tersedia.');
     }
 }

@@ -93,7 +93,7 @@
         <tr>
             <td><b>No Pendaftaran</b></td>
             <td>:</td>
-            <td>2025 : {{$data->id}}</td>
+            <td>2026 : {{$data->id}}</td>
         </tr>
         <tr>
             <td><b>Gelombang</b></td>
@@ -113,7 +113,15 @@
         <tr>
             <td><b>Status Di Terima</b></td>
             <td>:</td>
-            <td>@if($data->acc == '1' && $data->daful == '1' ) Selamat Untuk Ananda {{$data->nama_siswa}} Telah Di Terima Di SMAN 1 Sindangkasih.@endif</td>
+            <td>
+                @if($data->status_seleksi === 'diterima')
+                    Selamat untuk Ananda {{ $data->nama_siswa }} telah dinyatakan diterima di SMAN 1 Sindangkasih.
+                @elseif($data->status_seleksi === 'ditolak')
+                    Mohon maaf, Ananda {{ $data->nama_siswa }} belum diterima di SMAN 1 Sindangkasih.
+                @else
+                    Status seleksi masih dalam proses.
+                @endif
+            </td>
         </tr>
     </table>
 
@@ -186,7 +194,7 @@
         <tr>
             <td>Jarak</td>
             <td>:</td>
-            <td>{{ $data->jarak }} KM</td>
+            <td>{{ $data->jarak_km ?? $data->jarak }} KM</td>
         </tr>
         <tr>
             <td>Alamat</td>

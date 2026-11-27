@@ -38,6 +38,17 @@
                     @endif
                   </div>
                   <div class="form-group mt-3">
+                    <label for="kuota" class="{{ $errors->get('kuota') ? 'text-danger' : '' }}">Kuota Jalur</label>
+                    <input type="number" name="kuota" id="kuota" min="0" class="form-control {{ $errors->get('kuota') ? 'is-invalid' : '' }}" value="{{ old('kuota', $jalur->kuota ?? 0) }}">
+                    @if ($errors->get('kuota'))
+                    <div class="invalid-feedback text-danger">
+                    @foreach ($errors->get('kuota') as $message)
+                        {{ $message }}
+                    @endforeach
+                    </div>
+                    @endif
+                  </div>
+                  <div class="form-group mt-3">
                     <button type="submit" class="btn btn-primary">Update Jalur</button>
                     <a href="{{ route('jalur') }}" class="btn btn-secondary">Batal</a>
                   </div>

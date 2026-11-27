@@ -16,8 +16,8 @@ class JurusanSeeder extends Seeder
     {
         DB::table('jurusan')->insert([
             [
-                'jurusan' => 'Umum',
-                'deskripsi_jurusan' => 'Jurusan untuk siswa dengan program pendidikan umum.',
+                'jurusan' => 'Bahasa',
+                'deskripsi_jurusan' => 'Jurusan untuk siswa dengan program pendidikan bahasa.',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

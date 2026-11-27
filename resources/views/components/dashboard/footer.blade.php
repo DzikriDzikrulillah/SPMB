@@ -58,7 +58,7 @@
 
     function exportData(type, idtable) {
         const table = document.getElementById(idtable)
-        const fileName = `PPDB-SMAN 1 Sindangkasih${idtable}.xlsx`;
+        const fileName = `SPMB-SMAN 1 Sindangkasih${idtable}.xlsx`;
         const wb = XLSX.utils.table_to_book(table)
         XLSX.writeFile(wb, fileName)
     }
@@ -83,8 +83,6 @@
 
         $('#data_pendaftar').DataTable(options);
         $('#data_acc').DataTable(options);
-        $('#belum_daful').DataTable(options);
-        $('#sudah_daful').DataTable(options);
         $('#data_sekolah').DataTable(options);
 
         $('#data_kategori').DataTable({
@@ -223,6 +221,93 @@
         slug.value = preslug.toLowerCase();
     });
 </script>
+@if ($page === 'daftar_admin')
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        (function(){
+            const schoolLat = -7.308688088643808;
+            const schoolLng = 108.24370675150715;
+            let map, homeMarker, schoolMarker, connectorLine;
+            let geocodeRequest;
+
+            function toRad(x){return x * Math.PI / 180}
+            function haversineKm(lat1, lon1, lat2, lon2){
+                var R=6371; var dLat=toRad(lat2-lat1); var dLon=toRad(lon2-lon1);
+                var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            }
+
+            $(document).on('click', '#pick-on-map', function(){
+                var mapModal = new bootstrap.Modal(document.getElementById('mapModal'));
+                mapModal.show();
+                setTimeout(function(){
+                    if(!map){
+                        map = L.map('map').setView([schoolLat, schoolLng], 14);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+                        schoolMarker = L.marker([schoolLat, schoolLng],{draggable:false}).addTo(map).bindPopup('<strong>SMAN 1 Sindangkasih</strong>');
+                        const prevLat = parseFloat($('#latitude').val());
+                        const prevLng = parseFloat($('#longitude').val());
+                        if(prevLat && prevLng){
+                            homeMarker = L.marker([prevLat, prevLng],{draggable:true}).addTo(map);
+                            homeMarker.on('dragend', updateFromMarker);
+                            updateFromMarker();
+                        }
+                        map.on('click', function(e){
+                            const latlng = e.latlng;
+                            if(!homeMarker){
+                                homeMarker = L.marker(latlng,{draggable:true}).addTo(map);
+                                homeMarker.on('dragend', updateFromMarker);
+                            } else { homeMarker.setLatLng(latlng); }
+                            updateFromMarker();
+                        });
+                    } else { map.invalidateSize(); }
+                },300);
+            });
+
+            $(document).on('click','#confirm-location', function(){ if(!homeMarker) return; updateFromMarker(); });
+
+            function updateFromMarker(){
+                const latlng = homeMarker.getLatLng();
+                $('#latitude').val(latlng.lat);
+                $('#longitude').val(latlng.lng);
+                updateConnectorAndDistance();
+                reverseGeocode(latlng.lat, latlng.lng);
+            }
+
+            async function reverseGeocode(lat, lng){
+                if(geocodeRequest) geocodeRequest.abort();
+                geocodeRequest = new AbortController();
+                const addressField = $('textarea[name="alamat"]');
+                addressField.val('Mencari alamat...');
+
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1&accept-language=id`,
+                        {signal: geocodeRequest.signal}
+                    );
+                    if(!response.ok) throw new Error('Reverse geocoding failed');
+                    const data = await response.json();
+                    if(data.display_name) addressField.val(data.display_name);
+                } catch(error) {
+                    if(error.name !== 'AbortError') addressField.val('');
+                }
+            }
+
+            function updateConnectorAndDistance(){
+                if(!homeMarker || !schoolMarker) return;
+                const a = homeMarker.getLatLng(); const b = schoolMarker.getLatLng();
+                if(connectorLine) map.removeLayer(connectorLine);
+                connectorLine = L.polyline([[a.lat,a.lng],[b.lat,b.lng]],{color:'blue'}).addTo(map);
+                const dist = haversineKm(a.lat,a.lng,b.lat,b.lng);
+                const rounded = (Math.round(dist * 100) / 100).toFixed(2);
+                $('input[name="jarak_km"]').val(rounded);
+            }
+        })();
+    </script>
+@endif
 </body>
 
 </html>

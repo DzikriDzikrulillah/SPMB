@@ -17,7 +17,7 @@
                                 @csrf
                             <div class="form-group">
                                 <label class="mb-2">Deskripsi Singkat</label>
-                                <input name="deskripsi_singkat" class="form-control" placeholder="Deskripsi Singkat Untuk Di Depan" value="{{ $data->deskripsi_singkat ?? '🌟 Selamat Datang di Website PPDB Tahun Ajaran Baru! 📚'  }}">
+                                <input name="deskripsi_singkat" class="form-control" placeholder="Deskripsi Singkat Untuk Di Depan" value="{{ $data->deskripsi_singkat ?? '🌟 Selamat Datang di Website SPMB Tahun Ajaran Baru! 📚'  }}">
                             </div>
                             <div class="form-group mt-2">
                                 <label class="mb-2">Tentang Sekolah (Lengkap)</label>

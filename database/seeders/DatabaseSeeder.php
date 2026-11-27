@@ -18,10 +18,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $toDelete = ['users', 'gelombang', 'pendaftar', 'informasi', 'categories'];
+        $toDelete = ['hasil_waspas', 'bobot_kriteria', 'users', 'gelombang', 'pendaftar', 'informasi', 'categories'];
         Model::unguard();
         foreach ($toDelete as $table) {
-            DB::table($table)->truncate();
+            if (DB::getSchemaBuilder()->hasTable($table)) {
+                DB::table($table)->delete();
+            }
         }
 
         $this->call(CategorySeeder::class);
@@ -29,10 +31,10 @@ class DatabaseSeeder extends Seeder
         $this->call(pendaftarSeeder::class);
         $this->call(userSeeder::class);
         $this->call(JalurSeeder::class);
+        $this->call(BobotKriteriaSeeder::class);
         $this->call(JurusanSeeder::class);
         $this->call(InformasiSeeder::class);
 
         Model::reguard();
     }
-
 }

@@ -4,26 +4,26 @@
 
 
     <!-- Primary Meta Tags -->
-    <title>PPDB SMAN 1 Sindangkasih - Pendaftaran Siswa Baru</title>
+    <title>SPMB SMAN 1 Sindangkasih - Pendaftaran Siswa Baru</title>
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="">
-    <meta property="og:title" content="PPDB SMAN 1 Sindangkasih - Pendaftaran Siswa Baru">
+    <meta property="og:title" content="SPMB SMAN 1 Sindangkasih - Pendaftaran Siswa Baru">
     <meta property="og:description"
-        content="Pendaftaran Siswa Baru Di SMAN 1 Sindangkasih Tahun 2025/2026 Mengggunakan Sistem Online / Daring.">
+        content="Pendaftaran Siswa Baru Di SMAN 1 Sindangkasih Tahun 2026/2027 Mengggunakan Sistem Online / Daring.">
     <meta property="og:image" content="">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="PPDB SMAN 1 Sindangkasih - Pendaftaran Siswa Baru">
+    <meta property="twitter:title" content="SPMB SMAN 1 Sindangkasih - Pendaftaran Siswa Baru">
     <meta property="twitter:description"
-        content="Pendaftaran Siswa Baru Di SMAN 1 Sindangkasih Tahun 2025/2026 Mengggunakan Sistem Online / Daring.">
+        content="Pendaftaran Siswa Baru Di SMAN 1 Sindangkasih Tahun 2026/2027 Mengggunakan Sistem Online / Daring.">
 
-    <meta content="PPDB" name="keywords">
+    <meta content="SPMB" name="keywords">
 
     <meta name="title" content="SMAN 1 Sindangkasih - Pendaftaran Siswa Baru">
-    <meta name="description" content="sekolah menengah atas yang berlokasi di Kabupaten Ciamis,Jawa Barat, kini menerima peserta didik baru untuk tahun ajaran 2024/2025!">
-    <meta name="keywords" content="SMAN 1 Sindangkasih, PPDB SMA, PPDB SMAN 1 Sindangkasih">
+    <meta name="description" content="sekolah menengah atas yang berlokasi di Kabupaten Ciamis,Jawa Barat, kini menerima murid baru untuk tahun ajaran 2026/2027!">
+    <meta name="keywords" content="SMAN 1 Sindangkasih, SPMB SMA, SPMB SMAN 1 Sindangkasih">
     <meta name="robots" content="index, follow">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="language" content="English">

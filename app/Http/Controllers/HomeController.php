@@ -24,35 +24,64 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $hasSelectionStatus = Pendaftar::hasSelectionStatusColumn();
         $data_pendaftar = Pendaftar::orderBy('created_at', 'DESC')->limit(5, 0)->get();
 
         $data_lelaki = Pendaftar::where('jenis_kelamin', 'Laki Laki')->count();
         $data_perempuan = Pendaftar::where('jenis_kelamin', 'Perempuan')->count();
 
-        $g1 = Pendaftar::where('gelombang', 'gelombang_1')->count();
-        $g2 = Pendaftar::where('gelombang', 'gelombang_2')->count();
-        $g3 = Pendaftar::where('gelombang', 'gelombang_3')->count();
-        $g4 = Pendaftar::where('gelombang', 'gelombang_4')->count();
-        $bdf = Pendaftar::where('acc', '1')->where('daful', '0')->count();
-        $sdf = Pendaftar::where('acc', '1')->where('daful', '1')->count();
+        // Get unique gelombang from database
+        $gelombangList = Pendaftar::select('gelombang')
+            ->whereNotNull('gelombang')
+            ->where('gelombang', '!=', '')
+            ->distinct()
+            ->orderBy('gelombang')
+            ->pluck('gelombang')
+            ->toArray();
+
+        // Count per gelombang dynamically
+        $gelombangCounts = [];
+        foreach ($gelombangList as $gelombang) {
+            $gelombangCounts[$gelombang] = Pendaftar::where('gelombang', $gelombang)->count();
+        }
+
+        // Statistics based on selection status
+        $total_pendaftar = Pendaftar::count();
+        $sudah_acc = Pendaftar::where('acc', 1)->count();
+        $belum_acc = Pendaftar::where('acc', 0)->count();
+
+        if ($hasSelectionStatus) {
+            $diterima = Pendaftar::where('status_seleksi', 'diterima')->count();
+            $ditolak = Pendaftar::where('status_seleksi', 'ditolak')->count();
+            $pending = Pendaftar::where('status_seleksi', 'pending')->orWhereNull('status_seleksi')->count();
+        } else {
+            // Fallback for old system without status_seleksi
+            $diterima = 0;
+            $ditolak = 0;
+            $pending = Pendaftar::where('acc', 1)->count();
+        }
+
         $page = "dashboard";
 
-        $belum_daful = Pendaftar::where('acc', '1')->where('daful', '0')->count();
-        $belum_acc = Pendaftar::where('acc', '0')->count();
-        $sudah_acc = Pendaftar::where('acc', '1')->count();
-        $sudah_daful = Pendaftar::where('acc', '1')->where('daful', '1')->count();
-
-        // echo count($belum_acc);
-        // echo "<br/>";
-        // echo $belum_acc_int_recent;
-        // echo "<br/>";
-        // echo $belum_accx;
-        // dd($belum_accx);
-
+        // Chart showing selection status distribution
         $chart = LarapexChart::pieChart()
-            ->addData([$sudah_acc, $belum_acc, $sudah_daful])
-            ->setLabels(['Sudah di ACC', 'Belum di ACC', 'Sudah Daftar Ulang']);
+            ->addData([$diterima, $ditolak, $pending])
+            ->setLabels(['Diterima', 'Ditolak', 'Pending']);
 
-        return view('Dashboard/index', compact('g1', 'g2', 'g3', 'g4', 'bdf', 'sdf', 'page', 'chart', 'data_pendaftar', 'data_lelaki', 'data_perempuan', 'sudah_daful', 'belum_acc', 'sudah_acc', 'belum_daful'));
+        return view('Admin/index', compact(
+            'page',
+            'chart',
+            'data_pendaftar',
+            'data_lelaki',
+            'data_perempuan',
+            'total_pendaftar',
+            'sudah_acc',
+            'belum_acc',
+            'diterima',
+            'ditolak',
+            'pending',
+            'gelombangCounts',
+            'gelombangList'
+        ));
     }
 }

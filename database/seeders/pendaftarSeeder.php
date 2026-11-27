@@ -44,7 +44,7 @@ class pendaftarSeeder extends Seeder
         $dataArray = json_decode(Storage::get('datasekolah.json'), true);
 
         // Membuat pendaftar sebanyak 1000 data
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 1000; $i++) {
             Pendaftar::factory()->create([
                 'asal_sekolah' => $dataArray[array_rand($dataArray)]['sekolah'], // Memilih asal_sekolah secara acak
             ]);
